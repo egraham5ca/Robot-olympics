@@ -15,5 +15,5 @@
 
 
 ### [2026-04-01] – Networking
-- Raspberry Pi IP address (current network): **192.168.163.66**
+- Raspberry Pi IP address (current network): **192.168.162.246**
 
