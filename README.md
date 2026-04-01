@@ -12,4 +12,8 @@
 - Determined that the issue is **not related to software or code**.
 - Identified a hardware fault on the Raspberry Pi: **GPIO3 (I²C SCL) is broken and stuck LOW**, preventing I²C communication with the motor/servo controller.
 - Motor and servo testing cannot proceed until a functioning Raspberry Pi is used.
-``
+
+
+### [2026-04-01] – Networking
+- Raspberry Pi IP address (current network): **192.168.163.66**
+
