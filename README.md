@@ -17,3 +17,7 @@
 ### [2026-04-01] – Networking
 - Raspberry Pi IP address (current network): **192.168.162.246**
 
+#### [2026-04-08] - Error
+error code [ WARN:0@1.471] global cap_gstreamer.cpp:1777 open OpenCV | GStreamer warning: Cannot query video position: status=0, value=-1, duration=-1
+
+
