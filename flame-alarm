@@ -1,0 +1,24 @@
+import RPi.GPIO as GPIO
+import time
+
+# Pin configuration
+FLAME_SENSOR_PIN = 21  # Connect sensor DO to GPIO 21
+BUZZER_PIN = 18        # Connect active buzzer to GPIO 18
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(FLAME_SENSOR_PIN, GPIO.IN)
+GPIO.setup(BUZZER_PIN, GPIO.OUT)
+
+try:
+    print("Monitoring for fire...")
+    while True:
+        # Sensor outputs 0 (LOW) when flame is detected
+        if GPIO.input(FLAME_SENSOR_PIN) == GPIO.LOW:
+            print("🔥 FLAME DETECTED!")
+            GPIO.output(BUZZER_PIN, GPIO.HIGH) # Turn on alarm
+        else:
+            GPIO.output(BUZZER_PIN, GPIO.LOW)  # Turn off alarm
+        
+        time.sleep(0.1)
+except KeyboardInterrupt:
+    GPIO.cleanup()
