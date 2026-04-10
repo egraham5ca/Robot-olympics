@@ -19,5 +19,5 @@
 
 #### [2026-04-08] - Error
 error code [ WARN:0@1.471] global cap_gstreamer.cpp:1777 open OpenCV | GStreamer warning: Cannot query video position: status=0, value=-1, duration=-1
-
-
+#### [2026-04-10] - Webcam fixed - new problem
+Old webcam broke - new webcam installed connected to webcord and server working but not with camera- code edit required- webcam 3d print required
