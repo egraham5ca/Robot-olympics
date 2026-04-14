@@ -290,15 +290,20 @@ class mywindow(QMainWindow, Ui_server_ui):
             time.sleep(0.01)
 
 
+    
     def set_threading_video_send(self, state, close_time=0.3):
         if self.video_thread is None:
             buf_state = False
         else:
             buf_state = self.video_thread.is_alive()
+
         if state != buf_state:
             if state:
                 self.video_thread_is_running = True
-                self.video_thread = threading.Thread(target=self.threading_video_send)
+                self.video_thread = threading.Thread(
+                    target=self.threading_video_send,
+                    daemon=True
+            )
                 self.video_thread.start()
             else:
                 self.video_thread_is_running = False
@@ -306,22 +311,34 @@ class mywindow(QMainWindow, Ui_server_ui):
                     self.video_thread.join(close_time)
                     self.video_thread = None
 
+
     def threading_video_send(self):
-        while self.video_thread_is_running:
-            if self.tcp_server.is_video_server_connected():
-                self.camera.start_stream()
-                while self.tcp_server.is_video_server_connected():
-                    frame = self.camera.get_frame()
-                    lenFrame = len(frame)
-                    lengthBin = struct.pack('<I', lenFrame)
-                    try:
-                        self.tcp_server.send_data_to_video_client(lengthBin)
-                        self.tcp_server.send_data_to_video_client(frame)
-                    except:
-                        break
-                self.camera.stop_stream()
-            else:
-                time.sleep(0.1)
+        self.camera.start_stream()
+
+        try:
+            while self.video_thread_is_running:
+                if not self.tcp_server.is_video_server_connected():
+                    time.sleep(0.1)
+                    continue
+
+                frame = self.camera.get_frame()
+                if frame is None:
+                    time.sleep(0.01)
+                    continue
+
+                len_frame = len(frame)
+                length_bin = struct.pack('<I', len_frame)
+
+                try:
+                    self.tcp_server.send_data_to_video_client(length_bin)
+                    self.tcp_server.send_data_to_video_client(frame)
+                except Exception:
+                    break
+
+                time.sleep(0.03)  # ~30 FPS
+
+        finally:
+            self.camera.stop_stream()
 
     def set_process_led_running(self, state, close_time=0.3):
         if self.led_process is None:
