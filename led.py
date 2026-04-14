@@ -1,5 +1,11 @@
-# -*-coding: utf-8 -*-
 import time
+import os
+
+if os.geteuid() != 0:
+    raise RuntimeError(
+        "WS281X LEDs require root privileges.\n"
+        "Run with: sudo python3 led.py"
+    )
 from parameter import ParameterManager
 from rpi_ledpixel import Freenove_RPI_WS281X
 from spi_ledpixel import Freenove_SPI_LedPixel
@@ -7,34 +13,37 @@ from spi_ledpixel import Freenove_SPI_LedPixel
 class Led:
     def __init__(self):
         """Initialize the Led class and set up LED strip based on PCB and Raspberry Pi versions."""
-        # Initialize the ParameterManager instance
         self.param = ParameterManager()
-        # Get the Connect version from the parameter file
         self.connect_version = self.param.get_connect_version()
-        # Get the Raspberry Pi version from the parameter file
         self.pi_version = self.param.get_raspberry_pi_version()
 
-        # Set up the LED strip based on PCB and Raspberry Pi versions
-        if self.connect_version == 1 and self.pi_version == 1:
+        # ✅ DEBUG PRINTS GO HERE
+        print(f"[LED DEBUG] connect_version = {self.connect_version}")
+        print(f"[LED DEBUG] pi_version = {self.pi_version}")
+        
+        # Set up the LED strip
+        if self.pi_version == 1:
             self.strip = Freenove_RPI_WS281X(8, 255, 'RGB')
             self.is_support_led_function = True
 
-        elif self.connect_version == 2 and (self.pi_version == 1 or self.pi_version == 2):
+        elif self.connect_version == 2 and self.pi_version == 2:
             self.strip = Freenove_SPI_LedPixel(8, 255, 'GRB')
             self.is_support_led_function = True
 
-        elif self.connect_version == 1 and self.pi_version == 2:
-            # Print an error message and disable LED function if unsupported combination
-            print("Connect Version 1.0 is not supported on Raspberry PI 5.")
+        else:
+            print(
+                f"LED not supported: connect_version={self.connect_version}, "
+                f"pi_version={self.pi_version}"
+            )
             self.is_support_led_function = False
-                    
+
         self.start = time.time()
         self.next = 0
         self.color_wheel_value = 100
         self.color_chase_rainbow_index = 0
         self.color_wipe_index = 0
         self.rainbowbreathing_brightness = 0
-
+        
     def colorBlink(self, state=1, wait_ms=300):
         """Wipe color across display a pixel at a time."""
         if self.is_support_led_function == False:
