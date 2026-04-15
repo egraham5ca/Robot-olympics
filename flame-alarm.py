@@ -2,132 +2,80 @@
 # ============================================
 # Flame Alarm Auto-Escape Program
 # Robot Olympics – Raspberry Pi 4B
-# Uses PCA9685 motor driver + flame sensor
+#
+# Hardware:
+#  - Keyestudio flame sensor (DIGITAL, ACTIVE-LOW)
+#  - 4WD car using PCA9685 motor driver
+#
+# Behavior:
+#  - Flame detected  -> move away
+#  - No flame        -> stop motors
 # ============================================
 
 import time
 import RPi.GPIO as GPIO
-from pca9685 import PCA9685
+from motor import Ordinary_Car   # ✅ SAME driver as working motor test
 
 # ============================================
 # CONFIGURATION
 # ============================================
-FLAME_PIN = 24        # BCM pin for flame sensor
-CHECK_DELAY = 0.05   # seconds between checks
+FLAME_PIN = 16        # BCM pin (Keyestudio digital output)
+CHECK_DELAY = 0.05   # loop delay (seconds)
 
-# Motor behavior (0–4095) — KEEP SAME SPEED
-ESCAPE_SPEED = 2000
-
-# ============================================
-# MOTOR CLASS (CORRECTED)
-# ============================================
-class Ordinary_Car:
-    def __init__(self):
-        self.pwm = PCA9685(0x40, debug=False)
-        self.pwm.set_pwm_freq(50)
-
-    def duty_range(self, d1, d2, d3, d4):
-        return (
-            max(min(d1, 4095), -4095),
-            max(min(d2, 4095), -4095),
-            max(min(d3, 4095), -4095),
-            max(min(d4, 4095), -4095),
-        )
-
-    def left_upper_wheel(self, duty):
-        if duty > 0:
-            self.pwm.set_motor_pwm(0, 0)
-            self.pwm.set_motor_pwm(1, duty)
-        elif duty < 0:
-            self.pwm.set_motor_pwm(1, 0)
-            self.pwm.set_motor_pwm(0, abs(duty))
-        else:
-            self.pwm.set_motor_pwm(0, 0)
-            self.pwm.set_motor_pwm(1, 0)
-
-    def left_lower_wheel(self, duty):
-        if duty > 0:
-            self.pwm.set_motor_pwm(3, 0)
-            self.pwm.set_motor_pwm(2, duty)
-        elif duty < 0:
-            self.pwm.set_motor_pwm(2, 0)
-            self.pwm.set_motor_pwm(3, abs(duty))
-        else:
-            self.pwm.set_motor_pwm(2, 0)
-            self.pwm.set_motor_pwm(3, 0)
-
-    def right_upper_wheel(self, duty):
-        if duty > 0:
-            self.pwm.set_motor_pwm(6, 0)
-            self.pwm.set_motor_pwm(7, duty)
-        elif duty < 0:
-            self.pwm.set_motor_pwm(7, 0)
-            self.pwm.set_motor_pwm(6, abs(duty))
-        else:
-            self.pwm.set_motor_pwm(6, 0)
-            self.pwm.set_motor_pwm(7, 0)
-
-    def right_lower_wheel(self, duty):
-        if duty > 0:
-            self.pwm.set_motor_pwm(4, 0)
-            self.pwm.set_motor_pwm(5, duty)
-        elif duty < 0:
-            self.pwm.set_motor_pwm(5, 0)
-            self.pwm.set_motor_pwm(4, abs(duty))
-        else:
-            self.pwm.set_motor_pwm(4, 0)
-            self.pwm.set_motor_pwm(5, 0)
-
-    def set_motor_model(self, d1, d2, d3, d4):
-        d1, d2, d3, d4 = self.duty_range(d1, d2, d3, d4)
-        self.left_upper_wheel(d1)
-        self.left_lower_wheel(d2)
-        self.right_upper_wheel(d3)
-        self.right_lower_wheel(d4)
-
-    def stop(self):
-        # HARD STOP — guarantees motors off
-        for ch in range(8):
-            self.pwm.set_motor_pwm(ch, 0)
-
-    def close(self):
-        self.stop()
-        self.pwm.close()
+# KEEP SAME SPEED (as requested)
+ESCAPE_SPEED = 2000  # valid range: 0–4095
 
 # ============================================
-# FLAME SENSOR SETUP
+# SETUP
 # ============================================
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(FLAME_PIN, GPIO.IN)
 
 car = Ordinary_Car()
 
+ESCAPE_DURATION = 0.7  # seconds
+escaping = False
+last_escape_time = 0
+
 print("[SYSTEM] Flame alarm auto-escape active")
+print("[SYSTEM] Waiting for flame (ACTIVE-LOW)...")
 
 # ============================================
 # MAIN LOOP
 # ============================================
 try:
     while True:
-        if GPIO.input(FLAME_PIN) == GPIO.LOW:
-            # FIRE DETECTED → KEEP MOVING
+        flame_state = GPIO.input(FLAME_PIN)
+
+        # Keyestudio behavior:
+        # LOW  = flame detected
+        # HIGH = no flame
+        if flame_state == GPIO.LOW:
             print("🔥 FIRE DETECTED — ESCAPING")
+
+            # Move backward (all wheels reverse)
             car.set_motor_model(
                 -ESCAPE_SPEED,
                 -ESCAPE_SPEED,
                 -ESCAPE_SPEED,
                 -ESCAPE_SPEED
             )
+        
+ # Keep motors running for ESCAPE_DURATION
+        if escaping and (now - last_escape_time) < ESCAPE_DURATION:
+            pass  # keep moving
         else:
-            # NO FIRE → STOP
-            car.stop()
+            escaping = False
+            car.set_motor_model(0, 0, 0, 0)
 
-        time.sleep(CHECK_DELAY)
+    time.sleep(0.05)
+
 
 except KeyboardInterrupt:
     print("\n[SYSTEM] Program stopped by user")
 
 finally:
+    car.set_motor_model(0, 0, 0, 0)
     car.close()
     GPIO.cleanup()
     print("[SYSTEM] Motors stopped, GPIO cleaned up")
