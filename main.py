@@ -19,6 +19,7 @@ from car import Car
 from buzzer import Buzzer
 from Thread import stop_thread
 from threading import Thread
+DISABLE_CAMERA = True
 
 class mywindow(QMainWindow, Ui_server_ui):
     def __init__(self):
