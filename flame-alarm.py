@@ -13,15 +13,13 @@ from pca9685 import PCA9685
 # CONFIGURATION
 # ============================================
 FLAME_PIN = 24        # BCM pin for flame sensor
-CHECK_DELAY = 0.1    # seconds between checks
+CHECK_DELAY = 0.05   # seconds between checks
 
-# Motor behavior (0–4095)
+# Motor behavior (0–4095) — KEEP SAME SPEED
 ESCAPE_SPEED = 2000
-ESCAPE_TIME = 0.6
-ROTATE_TIME = 0.4
 
 # ============================================
-# MOTOR CLASS (FROM YOUR CODE)
+# MOTOR CLASS (CORRECTED)
 # ============================================
 class Ordinary_Car:
     def __init__(self):
@@ -44,8 +42,8 @@ class Ordinary_Car:
             self.pwm.set_motor_pwm(1, 0)
             self.pwm.set_motor_pwm(0, abs(duty))
         else:
-            self.pwm.set_motor_pwm(0, 4095)
-            self.pwm.set_motor_pwm(1, 4095)
+            self.pwm.set_motor_pwm(0, 0)
+            self.pwm.set_motor_pwm(1, 0)
 
     def left_lower_wheel(self, duty):
         if duty > 0:
@@ -55,8 +53,8 @@ class Ordinary_Car:
             self.pwm.set_motor_pwm(2, 0)
             self.pwm.set_motor_pwm(3, abs(duty))
         else:
-            self.pwm.set_motor_pwm(2, 4095)
-            self.pwm.set_motor_pwm(3, 4095)
+            self.pwm.set_motor_pwm(2, 0)
+            self.pwm.set_motor_pwm(3, 0)
 
     def right_upper_wheel(self, duty):
         if duty > 0:
@@ -66,8 +64,8 @@ class Ordinary_Car:
             self.pwm.set_motor_pwm(7, 0)
             self.pwm.set_motor_pwm(6, abs(duty))
         else:
-            self.pwm.set_motor_pwm(6, 4095)
-            self.pwm.set_motor_pwm(7, 4095)
+            self.pwm.set_motor_pwm(6, 0)
+            self.pwm.set_motor_pwm(7, 0)
 
     def right_lower_wheel(self, duty):
         if duty > 0:
@@ -77,8 +75,8 @@ class Ordinary_Car:
             self.pwm.set_motor_pwm(5, 0)
             self.pwm.set_motor_pwm(4, abs(duty))
         else:
-            self.pwm.set_motor_pwm(4, 4095)
-            self.pwm.set_motor_pwm(5, 4095)
+            self.pwm.set_motor_pwm(4, 0)
+            self.pwm.set_motor_pwm(5, 0)
 
     def set_motor_model(self, d1, d2, d3, d4):
         d1, d2, d3, d4 = self.duty_range(d1, d2, d3, d4)
@@ -88,7 +86,9 @@ class Ordinary_Car:
         self.right_lower_wheel(d4)
 
     def stop(self):
-        self.set_motor_model(0, 0, 0, 0)
+        # HARD STOP — guarantees motors off
+        for ch in range(8):
+            self.pwm.set_motor_pwm(ch, 0)
 
     def close(self):
         self.stop()
@@ -110,35 +110,19 @@ print("[SYSTEM] Flame alarm auto-escape active")
 try:
     while True:
         if GPIO.input(FLAME_PIN) == GPIO.LOW:
+            # FIRE DETECTED → KEEP MOVING
             print("🔥 FIRE DETECTED — ESCAPING")
-
-            # Stop first
-            car.stop()
-            time.sleep(0.1)
-
-            # Move backward (all wheels reverse)
             car.set_motor_model(
                 -ESCAPE_SPEED,
                 -ESCAPE_SPEED,
                 -ESCAPE_SPEED,
                 -ESCAPE_SPEED
             )
-            time.sleep(ESCAPE_TIME)
-
-            # Rotate right to escape flame cone
-            car.set_motor_model(
-                ESCAPE_SPEED,
-                ESCAPE_SPEED,
-                -ESCAPE_SPEED,
-                -ESCAPE_SPEED
-            )
-            time.sleep(ROTATE_TIME)
-
-            car.stop()
-            time.sleep(0.5)  # cooldown
-
         else:
-            time.sleep(CHECK_DELAY)
+            # NO FIRE → STOP
+            car.stop()
+
+        time.sleep(CHECK_DELAY)
 
 except KeyboardInterrupt:
     print("\n[SYSTEM] Program stopped by user")
