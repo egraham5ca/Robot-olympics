@@ -6,25 +6,30 @@ from spi_ledpixel import Freenove_SPI_LedPixel
 
 class Led:
     def __init__(self):
-    
-    #Initialise the LED system for the Robot Olympics car.
+        """Initialize the Led class and set up LED strip based on PCB and Raspberry Pi versions."""
+        # Initialize the ParameterManager instance
+        self.param = ParameterManager()
+        # Get the Connect version from the parameter file
+        self.connect_version = self.param.get_connect_version()
+        # Get the Raspberry Pi version from the parameter file
+        self.pi_version = self.param.get_raspberry_pi_version()
 
-    #This implementation uses SPI-based RGB LEDs, which are stable on
-    #Raspberry Pi 4B and Raspberry Pi OS (Bookworm).
+        # Set up the LED strip based on PCB and Raspberry Pi versions
+        if self.connect_version == 1 and self.pi_version == 1:
+            self.strip = Freenove_RPI_WS281X(8, 255, 'RGB')
+            self.is_support_led_function = True
 
-    # --- LED strip setup (SPI-based, robot-safe) ---
-        self.strip = Freenove_SPI_LedPixel(
-        count=8,
-        bright=255,
-        sequence='GRB'
-        )
-        self.is_support_led_function = True
+        elif self.connect_version == 2 and (self.pi_version == 1 or self.pi_version == 2):
+            self.strip = Freenove_SPI_LedPixel(8, 255, 'GRB')
+            self.is_support_led_function = True
 
-    # --- Timing and animation state ---
+        elif self.connect_version == 1 and self.pi_version == 2:
+            # Print an error message and disable LED function if unsupported combination
+            print("Connect Version 1.0 is not supported on Raspberry PI 5.")
+            self.is_support_led_function = False
+                    
         self.start = time.time()
         self.next = 0
-
-    # --- Animation parameters ---
         self.color_wheel_value = 100
         self.color_chase_rainbow_index = 0
         self.color_wipe_index = 0
@@ -175,5 +180,4 @@ if __name__ == '__main__':
         led.colorBlink(0)
     finally:
         print ("\nEnd of program")
-
    
