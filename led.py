@@ -13,14 +13,22 @@ class Led:
         self.connect_version = self.param.get_connect_version()
         # Get the Raspberry Pi version from the parameter file
         self.pi_version = self.param.get_raspberry_pi_version()
-        
-        # Set up the LED strip based on PCB and Raspberry Pi versions
-        self.is_support_led_function = False  # Default to False
 
         # Set up the LED strip based on PCB and Raspberry Pi versions
         if self.pi_version == 1:
-            self.strip = Freenove_RPI_WS281X(8, 255, 'RGB')
+            #self.strip = Freenove_RPI_WS281X(8, 255, 'RGB')
+            #self.is_support_led_function = True
+            self.strip = Freenove_SPI_LedPixel(8, 255, 'GRB')
             self.is_support_led_function = True
+
+        elif self.connect_version == 2 and (self.pi_version == 1 or self.pi_version == 2):
+            self.strip = Freenove_SPI_LedPixel(8, 255, 'GRB')
+            self.is_support_led_function = True
+
+        elif self.connect_version == 1 and self.pi_version == 2:
+            # Print an error message and disable LED function if unsupported combination
+            print("Connect Version 1.0 is not supported on Raspberry PI 5.")
+            self.is_support_led_function = False
                     
         self.start = time.time()
         self.next = 0

@@ -1,5 +1,7 @@
 import time
 from rpi_ws281x import Adafruit_NeoPixel, Color
+import RPi.GPIO as GPIO
+import time
 
 class Freenove_RPI_WS281X:
     def __init__(self, led_count: int = 4, brightness: int = 255, sequence: str = "RGB"):
