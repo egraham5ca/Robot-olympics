@@ -109,6 +109,3 @@ finally:
     car.close()
     GPIO.cleanup()
     print("[SYSTEM] Motors stopped, GPIO cleaned up")
-finally:
-    GPIO.cleanup()
-    print("GPIO cleaned up")
