@@ -13,6 +13,9 @@ class Led:
         self.connect_version = self.param.get_connect_version()
         # Get the Raspberry Pi version from the parameter file
         self.pi_version = self.param.get_raspberry_pi_version()
+        
+        # Set up the LED strip based on PCB and Raspberry Pi versions
+        self.is_support_led_function = False  # Default to False
 
         # Set up the LED strip based on PCB and Raspberry Pi versions
         if self.pi_version == 1:
