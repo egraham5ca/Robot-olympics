@@ -46,12 +46,15 @@ print("[SYSTEM] Waiting for flame (ACTIVE-LOW)...")
 try:
     while True:
         flame_state = GPIO.input(FLAME_PIN)
+        now = time.time()  # ✅ GET CURRENT TIME
 
         # Keyestudio behavior:
         # LOW  = flame detected
         # HIGH = no flame
-        if flame_state == GPIO.LOW:
+        if flame_state == GPIO.LOW and not escaping:  # ✅ ONLY START IF NOT ALREADY ESCAPING
             print("🔥 FIRE DETECTED — ESCAPING")
+            escaping = True  # ✅ SET ESCAPE FLAG
+            last_escape_time = now  # ✅ RECORD START TIME
 
             # Move backward (all wheels reverse)
             car.set_motor_model(
@@ -61,14 +64,17 @@ try:
                 -ESCAPE_SPEED
             )
         
- # Keep motors running for ESCAPE_DURATION
-        if escaping and (now - last_escape_time) < ESCAPE_DURATION:
-            pass  # keep moving
-        else:
+        # ✅ FIX: PROPER ESCAPE DURATION LOGIC
+        if escaping and (now - last_escape_time) >= ESCAPE_DURATION:
             escaping = False
             car.set_motor_model(0, 0, 0, 0)
+            print("✅ Escape complete")
 
-    time.sleep(0.05)
+        # ✅ FIX: STOP IF NO FLAME AND NOT ESCAPING
+        if flame_state == GPIO.HIGH and not escaping:
+            car.set_motor_model(0, 0, 0, 0)
+
+        time.sleep(CHECK_DELAY)  # ✅ INDENTED CORRECTLY
 
 
 except KeyboardInterrupt:
