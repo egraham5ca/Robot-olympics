@@ -15,7 +15,8 @@ class Freenove_RPI_WS281X:
         self.strip = Adafruit_NeoPixel(
             self.get_led_count(), 18, 800000, 10, False, self.led_brightness, 0
         )
-        self.led_init_state = 1 if self.strip.begin() else 0
+        result = self.strip.begin()
+        self.led_init_state = 1 if result is True else 0
 
     def check_rpi_ws281x_state(self) -> int:
         """Check the initialization state of the NeoPixel strip."""
