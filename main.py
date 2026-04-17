@@ -19,6 +19,7 @@ from car import Car
 from buzzer import Buzzer
 from Thread import stop_thread
 from threading import Thread
+#if I had more time I would have like to see if I could get the USB camera to work
 DISABLE_CAMERA = True
 
 class mywindow(QMainWindow, Ui_server_ui):
