@@ -1,10 +1,10 @@
-from adc import Adc
+from adc import ADC
 import time
 
 class Photoresistor:
     def __init__(self):
-        """Initialize the Photoresistor class and create an Adc instance."""
-        self.adc = Adc()
+        """Initialize the Photoresistor class and create an ADC instance."""
+        self.adc = ADC()
 
     def read_left_photoresistor(self) -> float:
         """Read the value from the left photoresistor."""
