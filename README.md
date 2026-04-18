@@ -21,3 +21,8 @@
 error code [ WARN:0@1.471] global cap_gstreamer.cpp:1777 open OpenCV | GStreamer warning: Cannot query video position: status=0, value=-1, duration=-1
 #### [2026-04-10] - Webcam fixed - new problem
 Old webcam broke - new webcam installed connected to webcord and server working but not with camera- code edit required- webcam 3d print required
+
+#### [2026-04-17] - installed 3d printed components
+added flame alarm and breadboard -could not find a small version!!!!
+found a elego breadboard power module that connects to a 9 v battery works amazing!
+found out that a fellow competitor order specialized components and maxed out their speed, Cannot come in 1st for the speed compition switching focus to the best in OFFROADING, SLALOM FOR TIME, SOCCER, BALLOON POP, RUN FROM FIRE and LIVE FEED CAMERA.
