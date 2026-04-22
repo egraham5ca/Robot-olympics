@@ -33,7 +33,7 @@ GPIO.setup(FLAME_PIN, GPIO.IN)
 
 car = Ordinary_Car()
 
-ESCAPE_DURATION = 0.7  # seconds
+ESCAPE_DURATION = 2  # seconds
 escaping = False
 last_escape_time = 0
 
